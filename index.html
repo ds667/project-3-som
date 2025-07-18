@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Color Palette Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f4f8;
+            margin: 0;
+            color: #333;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 900px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 2.8em;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .controls-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 30px;
+            align-items: center;
+        }
+
+        .palette-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .color-card {
+            background-color: #ecf0f1;
+            border-radius: 15px;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .color-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .hex-code {
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1em;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 8px 12px;
+            border-radius: 8px;
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            margin-top: auto;
+        }
+
+        .generate-button, .copy-all-button {
+            background-image: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 15px 35px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.3em;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            outline: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        .generate-button:hover, .copy-all-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+            background-image: linear-gradient(to right, #5c0ac7 0%, #1a60e0 100%);
+        }
+
+        .generate-button:active, .copy-all-button:active {
+            transform: translateY(0);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .copy-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .copy-message.show {
+            opacity: 1;
+        }
+
+        .lock-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            z-index: 5;
+        }
+
+        .lock-button:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .lock-button svg {
+            width: 18px;
+            height: 18px;
+            color: #666;
+        }
+
+        .lock-button.locked svg {
+            color: #2575fc;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2em;
+            }
+            .palette-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 15px;
+            }
+            .color-card {
+                height: 120px;
+            }
+            .hex-code {
+                font-size: 0.9em;
+                padding: 6px 10px;
+            }
+            .generate-button, .copy-all-button {
+                padding: 12px 25px;
+                font-size: 1.1em;
+            }
+            .controls-panel {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            .palette-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .color-card {
+                height: 100px;
+            }
+            .hex-code {
+                font-size: 0.8em;
+                padding: 5px 8px;
+            }
+            .generate-button, .copy-all-button {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Generate Your Next <br> Stunning Color Palette</h1>
+        <div class="controls-panel">
+            <div class="flex items-center gap-4">
+                <label for="numColors" class="text-lg font-medium text-gray-700">Number of Colors:</label>
+                <input type="range" id="numColors" min="3" max="10" value="5" class="w-48 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg">
+                <span id="numColorsValue" class="text-lg font-semibold text-indigo-600">5</span>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                <button id="generateButton" class="generate-button">Generate New Palette</button>
+                <button id="copyAllButton" class="copy-all-button bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600">Copy All Hex Codes</button>
+            </div>
+        </div>
+        <div id="paletteGrid" class="palette-grid"></div>
+    </div>
+    <script>
+        let currentColors = [];
+        const paletteGrid = document.getElementById('paletteGrid');
+        const generateButton = document.getElementById('generateButton');
+        const copyAllButton = document.getElementById('copyAllButton');
+        const numColorsInput = document.getElementById('numColors');
+        const numColorsValueSpan = document.getElementById('numColorsValue');
+
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        function createColorCard(colorObj, index) {
+            const colorCard = document.createElement('div');
+            colorCard.className = 'color-card';
+            colorCard.style.backgroundColor = colorObj.hex;
+            colorCard.dataset.index = index;
+
+            const hexCode = document.createElement('span');
+            hexCode.className = 'hex-code';
+            hexCode.textContent = colorObj.hex;
+
+            const copyMessage = document.createElement('div');
+            copyMessage.className = 'copy-message';
+            copyMessage.textContent = 'Copied!';
+
+            const lockButton = document.createElement('button');
+            lockButton.className = `lock-button ${colorObj.locked ? 'locked' : ''}`;
+            lockButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${colorObj.locked ? 'M8 11V7a4 4 0 118 0v4m-4 8a2 2 0 100-4m-4 4h8a2 2 0 002-2v-4a2 2 0 00-2-2H8a2 2 0 00-2 2v4a2 2 0 002 2z' : 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z'}"></path>
+                </svg>
+            `;
+
+            lockButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const cardIndex = parseInt(colorCard.dataset.index);
+                currentColors[cardIndex].locked = !currentColors[cardIndex].locked;
+                lockButton.classList.toggle('locked', currentColors[cardIndex].locked);
+                lockButton.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${currentColors[cardIndex].locked ? 'M8 11V7a4 4 0 118 0v4m-4 8a2 2 0 100-4m-4 4h8a2 2 0 002-2v-4a2 2 0 00-2-2H8a2 2 0 00-2 2v4a2 2 0 002 2z' : 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z'}"></path>
+                    </svg>
+                `;
+            });
+
+            colorCard.appendChild(lockButton);
+            colorCard.appendChild(hexCode);
+            colorCard.appendChild(copyMessage);
+
+            colorCard.addEventListener('click', () => {
+                const textarea = document.createElement('textarea');
+                textarea.value = colorObj.hex;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    copyMessage.classList.add('show');
+                    setTimeout(() => {
+                        copyMessage.classList.remove('show');
+                    }, 1000);
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                }
+                document.body.removeChild(textarea);
+            });
+
+            return colorCard;
+        }
+
+        function generatePalette() {
+            const numberOfColors = parseInt(numColorsInput.value);
+            const newColors = [];
+            const lockedColors = currentColors.filter(color => color.locked);
+            for (let i = 0; i < lockedColors.length; i++) {
+                newColors.push(lockedColors[i]);
+            }
+            for (let i = newColors.length; i < numberOfColors; i++) {
+                newColors.push({ hex: getRandomColor(), locked: false });
+            }
+            if (newColors.length > numberOfColors) {
+                newColors.length = numberOfColors;
+            }
+            currentColors = newColors;
+            paletteGrid.innerHTML = '';
+            currentColors.forEach((color, index) => {
+                const card = createColorCard(color, index);
+                paletteGrid.appendChild(card);
+            });
+        }
+
+        function copyAllHexCodes() {
+            const allHexCodes = currentColors.map(color => color.hex).join('\n');
+            const textarea = document.createElement('textarea');
+            textarea.value = allHexCodes;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                const originalText = copyAllButton.textContent;
+                copyAllButton.textContent = 'Copied All!';
+                setTimeout(() => {
+                    copyAllButton.textContent = originalText;
+                }, 1500);
+            } catch (err) {
+                console.error('Failed to copy all hex codes: ', err);
+            }
+            document.body.removeChild(textarea);
+        }
+
+        generateButton.addEventListener('click', generatePalette);
+        copyAllButton.addEventListener('click', copyAllHexCodes);
+
+        numColorsInput.addEventListener('input', () => {
+            numColorsValueSpan.textContent = numColorsInput.value;
+            generatePalette();
+        });
+
+        document.addEventListener('DOMContentLoaded', generatePalette);
+    </script>
+</body>
+</html>
